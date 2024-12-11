@@ -24,10 +24,9 @@ OsuTrack is a Flutter-based mobile application for osu! enthusiasts. It allows u
 
 ## Screenshots 📸
 
-<img src='https://github.com/user-attachments/assets/4fe0510a-c838-4380-b115-ff1ed92820ce' width=300 height=625>
-<img src='https://github.com/user-attachments/assets/9ee3a9ac-3c48-445b-9338-79455bdd2f1e' width=300 height=625>
-<img src='https://github.com/user-attachments/assets/68001f1d-6fcb-4f34-b1ae-99a4ad7c66bd' width=300 height=625>
-<img src='https://github.com/user-attachments/assets/34fda099-a3ba-4c78-8a03-ffe4d853b36b' width=300 height=625>
+<img src='https://github.com/user-attachments/assets/32891279-ccb7-4641-bb23-b4ce908b415a' width=300 height=625>
+<img src='https://github.com/user-attachments/assets/f81ac49e-7aae-4657-8e73-0ad4a909cb79' width=300 height=625>
+<img src='https://github.com/user-attachments/assets/03f3a16d-2787-481e-8fd2-50b91cff5141' width=300 height=625>
 
 ---
 
