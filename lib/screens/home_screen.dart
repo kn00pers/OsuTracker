@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'user_detail_screen.dart';
-import 'favorite_screen.dart'; // Importuj nowy ekran
+import 'favorite_screen.dart';
 import '../services/api_service.dart';
 import '../models/user.dart';
 
@@ -15,13 +15,11 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _errorMessage;
   User? _user;
   List<User> _favoriteUsers = [];
-  bool _showDetailsButton = false;
 
   void _fetchUserData() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
-      _showDetailsButton = false;
     });
 
     final accessToken = await ApiService.getAccessToken();
@@ -38,7 +36,18 @@ class _HomeScreenState extends State<HomeScreen> {
       _isLoading = false;
       if (user != null) {
         _user = user;
-        _showDetailsButton = true;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => UserDetailScreen(
+              user: _user!,
+              onAddToFavorites: _addToFavorites,
+              onRemoveFromFavorites: _removeFromFavorites,
+              favoriteUsers: _favoriteUsers,
+              onUpdateUser: _updateUser,
+            ),
+          ),
+        );
       } else {
         _errorMessage = "User not found";
       }
@@ -80,16 +89,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String userId = _controller.text;
 
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFF062A1), Color(0xFFFF87C6)],
-          ),
+          color: Color(0xFF302e39), // Tło
         ),
         child: Center(
           child: Padding(
@@ -101,70 +105,39 @@ class _HomeScreenState extends State<HomeScreen> {
                   controller: _controller,
                   autocorrect: false,
                   decoration: InputDecoration(
-                    labelStyle: TextStyle(color: Colors.white),
+                    labelStyle: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
+                    fillColor: Color(0xFF18171c),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: Icon(Icons.person, color: Colors.white),
+                    prefixIcon: Icon(Icons.person, color: Color(0xFFeeedf2)),
                   ),
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 ElevatedButton.icon(
                   onPressed: _validateAndFetchUserData,
-                  icon: Icon(Icons.search, color: Colors.pink),
-                  label: Text('Get Stats', style: TextStyle(color: Colors.pink)),
+                  icon: Icon(Icons.search, color: Color(0xFFfa66a5)),
+                  label: Text('Get Stats', style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2), fontSize: 16, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
+                    backgroundColor: Color(0xFF18171c),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                     elevation: 5,
                   ),
                 ),
-                const SizedBox(height: 16),
-                if (_isLoading) CircularProgressIndicator(),
+                const SizedBox(height: 10),
+                if (_isLoading) CircularProgressIndicator(color: Color(0xFFfa66a5)),
                 if (_errorMessage != null)
                   Text(
                     _errorMessage!,
-                    style: TextStyle(color: Colors.red),
+                    style: TextStyle(fontFamily: 'Exo2', color: Colors.red),
                   ),
-                if (_showDetailsButton && _user != null)
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => UserDetailScreen(
-                            user: _user!,
-                            onAddToFavorites: _addToFavorites,
-                            onRemoveFromFavorites: _removeFromFavorites,
-                            favoriteUsers: _favoriteUsers,
-                            onUpdateUser: _updateUser,
-                          ),
-                        ),
-                      ).then((_) {
-                        setState(() {
-                          _showDetailsButton = false;
-                        });
-                      });
-                    },
-                    icon: Icon(Icons.arrow_forward, color: Colors.pink),
-                    label: Text("View $userId's Details", style: TextStyle(color: Colors.pink)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                      elevation: 5,
-                    ),
-                  ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 ElevatedButton.icon(
                   onPressed: () {
                     Navigator.push(
@@ -178,14 +151,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   },
-                  icon: Icon(Icons.favorite, color: Colors.pink),
-                  label: Text('View Favorites', style: TextStyle(color: Colors.pink)),
+                  icon: Icon(Icons.favorite, color: Color(0xFFfa66a5)),
+                  label: Text('Favorites', style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2), fontSize: 16, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
+                    backgroundColor: Color(0xFF18171c),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                     elevation: 5,
                   ),
                 ),

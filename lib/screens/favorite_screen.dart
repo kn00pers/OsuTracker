@@ -43,7 +43,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   }
 
   void _startAutoUpdate() {
-    _timer = Timer.periodic(Duration(minutes: 15), (timer) {
+    _timer = Timer.periodic(Duration(minutes: 30), (timer) {
       _updateAllUsers(showLoading: false);
     });
   }
@@ -114,9 +114,12 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
       int index = _favoriteUsers.indexWhere((u) => u.id == user.id);
       if (index != -1) {
         _favoriteUsers[index] = user;
-        _filteredUsers[index] = user;
-        _applyFilter();
       }
+      index = _filteredUsers.indexWhere((u) => u.id == user.id);
+      if (index != -1) {
+        _filteredUsers[index] = user;
+      }
+      _applyFilter();
     });
   }
 
@@ -127,11 +130,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         children: [
           Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFF062A1), Color(0xFFFF87C6)],
-              ),
+              color: Color(0xFF302e39), // Tło
             ),
             child: Column(
               children: [
@@ -141,12 +140,13 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.arrow_back, color: Colors.white),
+                        icon: Icon(Icons.arrow_back, color: Color(0xFFeeedf2)),
                         onPressed: () {
                           Navigator.pop(context);
                         },
                       ),
                       PopupMenuButton<String>(
+                        color: Color(0xFF18171c), // Tło PopupMenu
                         onSelected: (String result) {
                           setState(() {
                             _filterType = result;
@@ -158,9 +158,9 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                             value: 'alphabetical',
                             child: Row(
                               children: [
-                                Icon(Icons.sort_by_alpha),
+                                Icon(Icons.sort_by_alpha, color: Color(0xFFeeedf2)),
                                 SizedBox(width: 10),
-                                Text('Alphabetical'),
+                                Text('Alphabetical', style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2))),
                               ],
                             ),
                           ),
@@ -168,30 +168,29 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                             value: 'ranking',
                             child: Row(
                               children: [
-                                Icon(Icons.leaderboard),
+                                Icon(Icons.leaderboard, color: Color(0xFFeeedf2)),
                                 SizedBox(width: 10),
-                                Text('Ranking'),
+                                Text('Ranking', style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2))),
                               ],
                             ),
                           ),
                         ],
                         child: ElevatedButton(
                           onPressed: null,
-                          child: Icon(Icons.filter_list, color: Colors.white),
+                          child: Icon(Icons.filter_list, color: Color(0xFFeeedf2)),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.pink,
+                            backgroundColor: Color(0xFF18171c), 
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                if (_isLoading) CircularProgressIndicator(),
+                if (_isLoading) CircularProgressIndicator(color: Color(0xFFfa66a5)),
                 if (_errorMessage != null)
                   Text(
                     _errorMessage!,
-                    style: TextStyle(color: Colors.red),
+                    style: TextStyle(fontFamily: 'Exo2', color: Colors.red),
                   ),
                 Expanded(
                   child: Padding(
@@ -203,7 +202,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.15), // Przezroczyste czarne tło
+                            color: Color(0xFF18171c), // Tło elementu listy
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: ListTile(
@@ -212,20 +211,20 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                             ),
                             title: Text(
                               user.username,
-                              style: TextStyle(color: Colors.white),
+                              style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2), fontWeight: FontWeight.bold),
                             ),
                             subtitle: Text(
                               'Ranking: ${user.statistics?.globalRank ?? 'N/A'}',
-                              style: TextStyle(color: Colors.white70),
+                              style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
                             ),
                             trailing: IconButton(
-                              icon: Icon(Icons.delete, color: Colors.white),
+                              icon: Icon(Icons.delete, color: Color(0xFFeeedf2)),
                               onPressed: () {
                                 _removeFromFavorites(user);
                               },
                             ),
                             onTap: () async {
-                              await _fetchUserData(user, showLoading: true);
+                              await _fetchUserData(user, showLoading: false);
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -249,7 +248,11 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                     onUpdateUser: _updateUser,
                                   ),
                                 ),
-                              );
+                              ).then((_) {
+                                setState(() {
+                                  _applyFilter();
+                                });
+                              });
                             },
                           ),
                         );

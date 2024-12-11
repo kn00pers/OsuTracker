@@ -62,11 +62,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFF062A1), Color(0xFFFF87C6)],
-          ),
+          color: Color(0xFF302e39), // Tło
         ),
         child: Stack(
           children: [
@@ -92,14 +88,15 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                           child: Text(
                             user.username,
                             style: TextStyle(
-                              color: Colors.white,
+                              fontFamily: 'Exo2',
+                              color: Color(0xFFeeedf2),
                               fontWeight: FontWeight.bold,
-                              fontSize: 24,
+                              fontSize: 32,
                               shadows: [
                                 Shadow(
                                   blurRadius: 1,
-                                  color: Colors.black54,
-                                  offset: Offset(3, 3),
+                                  color: Colors.black,
+                                  offset: Offset(2, 2),
                                 ),
                               ],
                             ),
@@ -109,23 +106,19 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     ],
                   ),
                   SizedBox(height: 20),
-                  ElevatedButton.icon(
+                  ElevatedButton(
                     onPressed: _toggleFavorite,
-                    icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: Colors.pink,
-                    ),
-                    label: Text(
-                      isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
-                      style: TextStyle(color: Colors.pink),
-                    ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      backgroundColor: Color(0xFF18171c),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                       elevation: 5,
+                    ),
+                    child: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: Color(0xFFfa66a5),
                     ),
                   ),
                   SizedBox(height: 20),
@@ -134,6 +127,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
+                    color: Color(0xFF18171c), // Tło karty
                     elevation: 5,
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
@@ -159,7 +153,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               top: 40,
               left: 10,
               child: IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.white),
+                icon: Icon(Icons.arrow_back, color: Color(0xFFeeedf2)),
                 onPressed: () {
                   Navigator.pop(context, user);
                 },
@@ -180,6 +174,8 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           Text(
             label,
             style: TextStyle(
+              fontFamily: 'Exo2',
+              color: Color(0xFFeeedf2),
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
@@ -187,6 +183,8 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           Text(
             value,
             style: TextStyle(
+              fontFamily: 'Exo2',
+              color: Color(0xFFeeedf2),
               fontSize: 16,
             ),
           ),
