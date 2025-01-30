@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../models/user.dart';
 
@@ -57,7 +56,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     final DateTime joinDate = DateTime.parse(user.joinDate);
     final String formattedDate = formatter.format(joinDate);
     final String hitAccuracy = user.statistics?.hitAccuracy?.toStringAsFixed(2) ?? 'N/A';
-    final String pp = user.statistics?.pp?.toStringAsFixed(0) ?? 'N/A';
 
     final int? globalRankDiff = user.statistics != null && user.previousStatistics != null
         ? user.statistics!.rankDifference(user.statistics!.globalRank, user.previousStatistics!.globalRank)
@@ -73,7 +71,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Color(0xFF302e39), // Background color
         ),
         child: Stack(
@@ -96,14 +94,14 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
       ),
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: ConstrainedBox(
-        constraints: BoxConstraints(
+        constraints: const BoxConstraints(
           maxWidth: 150,
         ),
         child: Text(
           user.username,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Exo2',
             color: Color(0xFFeeedf2),
             fontWeight: FontWeight.bold,
@@ -116,9 +114,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               ),
             ],
           ),
-          overflow: TextOverflow.ellipsis, // Truncates long text with ellipsis
+          overflow: TextOverflow.ellipsis, 
           softWrap: true, 
-          textAlign: TextAlign.center, // Center the text horizontally
+          textAlign: TextAlign.center,
         ),
       ),
     ),
@@ -126,29 +124,29 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
                     ],
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: _toggleFavorite,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF18171c),
+                      backgroundColor: const Color(0xFF18171c),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                       elevation: 5,
                     ),
                     child: Icon(
                       isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: Color(0xFFfa66a5),
+                      color: const Color(0xFFfa66a5),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Card(
-                    margin: EdgeInsets.symmetric(horizontal: 20),
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    color: Color(0xFF18171c), // Card background color
+                    color: const Color(0xFF18171c), 
                     elevation: 5,
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
@@ -156,18 +154,16 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildStatisticRow('Country', user.country.name),
-                          _buildStatisticRow('PP', '$pp', ppDifference: ppDiff),
+                          _buildStatisticRow('PP', user.statistics?.pp?.toStringAsFixed(0) ?? 'N/A', ppDifference: ppDiff),
                           _buildStatisticRow('Hit Accuracy', '$hitAccuracy%'),
                           _buildStatisticRow(
                             'Global Rank',
                             user.statistics?.globalRank?.toString() ?? 'N/A',
-                            previousValue: user.previousStatistics?.globalRank?.toString(),
                             rankDifference: globalRankDiff,
                           ),
                           _buildStatisticRow(
                             'Country Rank',
                             user.statistics?.countryRank?.toString() ?? 'N/A',
-                            previousValue: user.previousStatistics?.countryRank?.toString(),
                             rankDifference: countryRankDiff,
                           ),
                           _buildStatisticRow('Join Date', formattedDate),
@@ -184,7 +180,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               top: 40,
               left: 10,
               child: IconButton(
-                icon: Icon(Icons.arrow_back, color: Color(0xFFeeedf2)),
+                icon: const Icon(Icons.arrow_back, color: Color(0xFFeeedf2)),
                 onPressed: () {
                   Navigator.pop(context, user);
                 },
@@ -217,7 +213,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'Exo2',
               color: Color(0xFFeeedf2),
               fontWeight: FontWeight.bold,
@@ -226,7 +222,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           ),
           Text(
             '$formattedValue$differenceText',
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'Exo2',
               color: Color(0xFFeeedf2),
               fontSize: 16,

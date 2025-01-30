@@ -119,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Color(0xFF302e39), // Tło
         ),
         child: Center(
@@ -132,37 +132,37 @@ class _HomeScreenState extends State<HomeScreen> {
                   controller: _controller,
                   autocorrect: false,
                   decoration: InputDecoration(
-                    labelStyle: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
+                    labelStyle: const TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
                     filled: true,
-                    fillColor: Color(0xFF18171c),
+                    fillColor: const Color(0xFF18171c),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: Icon(Icons.person, color: Color(0xFFeeedf2)),
+                    prefixIcon: const Icon(Icons.person, color: Color(0xFFeeedf2)),
                   ),
-                  style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
+                  style: const TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
                   onPressed: _validateAndFetchUserData,
-                  icon: Icon(Icons.search, color: Color(0xFFfa66a5)),
-                  label: Text('Get Stats', style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2), fontSize: 16, fontWeight: FontWeight.bold)),
+                  icon: const Icon(Icons.search, color: Color(0xFFfa66a5)),
+                  label: const Text('Get Stats', style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2), fontSize: 16, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF18171c),
+                    backgroundColor: const Color(0xFF18171c),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                     elevation: 5,
                   ),
                 ),
                 const SizedBox(height: 10),
-                if (_isLoading) CircularProgressIndicator(color: Color(0xFFfa66a5)),
+                if (_isLoading) const CircularProgressIndicator(color: Color(0xFFfa66a5)),
                 if (_errorMessage != null)
                   Text(
                     _errorMessage!,
-                    style: TextStyle(fontFamily: 'Exo2', color: Colors.red),
+                    style: const TextStyle(fontFamily: 'Exo2', color: Colors.red),
                   ),
                 const SizedBox(height: 10),
                 ElevatedButton.icon(
@@ -178,14 +178,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   },
-                  icon: Icon(Icons.favorite, color: Color(0xFFfa66a5)),
-                  label: Text('Favorites', style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2), fontSize: 16, fontWeight: FontWeight.bold)),
+                  icon: const Icon(Icons.favorite, color: Color(0xFFfa66a5)),
+                  label: const Text('Favorites', style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2), fontSize: 16, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF18171c),
+                    backgroundColor: const Color(0xFF18171c),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                     elevation: 5,
                   ),
                 ),
