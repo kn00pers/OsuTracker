@@ -3,6 +3,7 @@ import 'dart:async';
 import '../models/user.dart';
 import 'user_detail_screen.dart';
 import '../services/api_service.dart';
+import '../services/storage_service.dart';
 
 class FavoriteScreen extends StatefulWidget {
   final List<User> favoriteUsers;
@@ -63,20 +64,19 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   }
 
   void _applyFilter() {
-  setState(() {
-    if (_filterType == 'alphabetical') {
-      _filteredUsers.sort((a, b) {
-        return (a.username.toLowerCase()).compareTo(b.username.toLowerCase());
-      });
-    } else if (_filterType == 'ranking') {
-      _filteredUsers.sort((a, b) {
-        return (a.statistics?.globalRank ?? double.infinity)
-            .compareTo(b.statistics?.globalRank ?? double.infinity);
-      });
-    }
-  });
-}
-
+    setState(() {
+      if (_filterType == 'alphabetical') {
+        _filteredUsers.sort((a, b) {
+          return (a.username.toLowerCase()).compareTo(b.username.toLowerCase());
+        });
+      } else if (_filterType == 'ranking') {
+        _filteredUsers.sort((a, b) {
+          return (a.statistics?.globalRank?? double.infinity)
+            .compareTo(b.statistics?.globalRank?? double.infinity);
+        });
+      }
+    });
+  }
 
   Future<void> _fetchUserData(User user, {bool showLoading = true}) async {
     if (showLoading) {
@@ -98,18 +98,18 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
     }
 
     final updatedUser = await ApiService.fetchUserData(user.username, accessToken);
-    if (showLoading) {
-      setState(() {
-        _isLoading = true;
-        if (updatedUser != null) {
-          _updateUser(updatedUser);
-        } else {
-          _errorMessage = "User not found";
-        }
-      });
+    if (updatedUser!= null) {
+      // Before updating, store the current statistics as previousStatistics
+      updatedUser.previousStatistics = user.statistics;
+      // Store the updated user statistics
+      await StorageService.saveUserStats(updatedUser);
+      _updateUser(updatedUser);
     } else {
-      if (updatedUser != null) {
-        _updateUser(updatedUser);
+      if (showLoading) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = "User not found";
+        });
       }
     }
   }
@@ -117,11 +117,11 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   void _updateUser(User user) {
     setState(() {
       int index = _favoriteUsers.indexWhere((u) => u.id == user.id);
-      if (index != -1) {
+      if (index!= -1) {
         _favoriteUsers[index] = user;
       }
       index = _filteredUsers.indexWhere((u) => u.id == user.id);
-      if (index != -1) {
+      if (index!= -1) {
         _filteredUsers[index] = user;
       }
       _applyFilter();
@@ -135,7 +135,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         children: [
           Container(
             decoration: const BoxDecoration(
-              color: Color(0xFF302e39), // Tło
+              color: Color(0xFF302e39),
             ),
             child: Column(
               children: [
@@ -183,7 +183,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                         child: ElevatedButton(
                           onPressed: null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(255, 0, 0, 0), 
+                            backgroundColor: const Color.fromARGB(255, 0, 0, 0),
                           ),
                           child: const Icon(Icons.filter_list, color: Color(0xFFeeedf2)),
                         ),
@@ -192,7 +192,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                   ),
                 ),
                 if (_isLoading) const CircularProgressIndicator(color: Color(0xFFfa66a5)),
-                if (_errorMessage != null)
+                if (_errorMessage!= null)
                   Text(
                     _errorMessage!,
                     style: const TextStyle(fontFamily: 'Exo2', color: Colors.red),
@@ -207,7 +207,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF18171c), 
+                            color: const Color(0xFF18171c),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: ListTile(
@@ -218,13 +218,22 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                               user.username,
                               style: const TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2), fontWeight: FontWeight.bold),
                             ),
-                            subtitle: Text(
-                              user.statistics != null && user.previousStatistics != null
-                                ? 'Rank: ${user.statistics?.globalRank ?? 'N/A'} (${user.statistics?.rankDifference(user.statistics?.globalRank, user.previousStatistics?.globalRank)?.isNegative == true ? '+' : '-'}${user.statistics?.rankDifference(user.statistics?.globalRank, user.previousStatistics?.globalRank) ?? 'N/A'})'
-                                : 'Rank: ${user.statistics?.globalRank ?? 'N/A'}',
-                                style: const TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
+                            subtitle: RichText(
+                              text: TextSpan(
+                              text: 'Rank: ${user.statistics?.globalRank ?? 'N/A'} ',
+                              style: const TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
+                              children: [
+                                if (user.statistics != null && user.previousStatistics != null)
+                                if (user.statistics?.rankDifference(user.statistics?.globalRank, user.previousStatistics?.globalRank) != 0)
+                                  TextSpan(
+                                  text: ' (${user.statistics?.rankDifference(user.statistics?.globalRank, user.previousStatistics?.globalRank)?.isNegative == true ? '+' : '-'}${user.statistics?.rankDifference(user.statistics?.globalRank, user.previousStatistics?.globalRank) ?? 'N/A'})',
+                                  style: TextStyle(
+                                    color: user.statistics?.rankDifference(user.statistics?.globalRank, user.previousStatistics?.globalRank)?.isNegative == true ? Colors.green : Colors.red,
+                                  ),
+                                  ),
+                              ],
+                              ),
                             ),
-
                             trailing: IconButton(
                               icon: Icon(Icons.delete, color: Color(0xFFeeedf2)),
                               onPressed: () {

@@ -5,6 +5,7 @@ import 'user_detail_screen.dart';
 import 'favorite_screen.dart';
 import '../services/api_service.dart';
 import '../models/user.dart';
+import '../services/storage_service.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -27,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
     final String? favoriteJson = prefs.getString('favorites');
-    if (favoriteJson != null) {
+    if (favoriteJson!= null) {
       final List<dynamic> userMap = jsonDecode(favoriteJson);
       setState(() {
         _favoriteUsers = userMap.map((data) => User.fromJson(data)).toList();
@@ -59,8 +60,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = await ApiService.fetchUserData(_controller.text, accessToken);
     setState(() {
       _isLoading = false;
-      if (user != null) {
+      if (user!= null) {
         _user = user;
+        // Store the fetched user statistics
+        StorageService.saveUserStats(user);
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -108,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _updateUser(User user) {
     setState(() {
       int index = _favoriteUsers.indexWhere((u) => u.id == user.id);
-      if (index != -1) {
+      if (index!= -1) {
         _favoriteUsers[index] = user;
         _saveFavorites();
       }
@@ -120,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          color: Color(0xFF302e39), // Tło
+          color: Color(0xFF302e39),
         ),
         child: Center(
           child: Padding(
@@ -159,14 +162,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 10),
                 if (_isLoading) const CircularProgressIndicator(color: Color(0xFFfa66a5)),
-                if (_errorMessage != null)
+                if (_errorMessage!= null)
                   Text(
                     _errorMessage!,
                     style: const TextStyle(fontFamily: 'Exo2', color: Colors.red),
                   ),
                 const SizedBox(height: 10),
                 ElevatedButton.icon(
-                  onPressed: () {
+                  onPressed: () async {
+                    for (var user in _favoriteUsers) {
+                      final accessToken = await ApiService.getAccessToken();
+                      if (accessToken!= null) {
+                        final updatedUser = await ApiService.fetchUserData(user.username, accessToken);
+                        if (updatedUser!= null) {
+                          _updateUser(updatedUser);
+                          _isLoading = true;
+                        }
+                      }
+                    }
+
+                    _isLoading = false;
                     Navigator.push(
                       context,
                       MaterialPageRoute(

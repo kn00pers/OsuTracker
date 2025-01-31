@@ -10,7 +10,7 @@ class User {
   final String? lastVisit;
   final Statistics? statistics;
   final String joinDate;
-  final Statistics? previousStatistics;
+  Statistics? previousStatistics;
 
   User({
     required this.id,
@@ -38,9 +38,9 @@ class User {
       isOnline: json['is_online'],
       isSupporter: json['is_supporter'],
       lastVisit: json['last_visit'],
-      statistics: json['statistics'] != null ? Statistics.fromJson(json['statistics']) : null,
+      statistics: json['statistics']!= null? Statistics.fromJson(json['statistics']): null,
       joinDate: json['join_date'],
-      previousStatistics: json['previous_statistics'] != null ? Statistics.fromJson(json['previous_statistics']) : null,
+      previousStatistics: json['previous_statistics']!= null? Statistics.fromJson(json['previous_statistics']): null,
     );
   }
 
@@ -97,7 +97,7 @@ class Statistics {
       pp: (json['pp'] as num?)?.toDouble(),
       globalRank: json['global_rank'],
       countryRank: json['country_rank'],
-      level: json['level'] != null ? Level.fromJson(json['level']) : null,
+      level: json['level']!= null? Level.fromJson(json['level']): null,
       hitAccuracy: json['hit_accuracy'],
     );
   }
@@ -113,14 +113,14 @@ class Statistics {
   }
 
   int? rankDifference(int? current, int? previous) {
-    if (current != null && previous != null) {
+    if (current!= null && previous!= null) {
       return current - previous;
     }
     return null;
   }
 
   double? ppDifference(double? current, double? previous) {
-    if (current != null && previous != null) {
+    if (current!= null && previous!= null) {
       return current - previous;
     }
     return null;

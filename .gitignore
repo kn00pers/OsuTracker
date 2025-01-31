@@ -44,5 +44,4 @@ app.*.map.json
 
 # other
 /lib/services/api_service.dart
-/lib/services
 
