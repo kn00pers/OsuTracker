@@ -1,4 +1,4 @@
-# OsuTrack 🎮
+# OsuTracker 🎮
 
 OsuTrack is a Flutter-based mobile application for osu! enthusiasts. It allows users to explore detailed information about osu! players, including their global and country ranks, performance points (pp), level, and more. With a clean and intuitive interface, the app offers a smooth experience for tracking player statistics and discovering new users to follow.
 
