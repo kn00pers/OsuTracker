@@ -51,7 +51,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     final String formattedDate = formatter.format(joinDate);
     final String hitAccuracy = user.statistics?.hitAccuracy?.toStringAsFixed(2)?? 'N/A';
 
-    // Fetch the previous statistics for the user
     final previousStatsFuture = StorageService.getUserStats(user.id.toString());
 
     return FutureBuilder<Map<String, dynamic>?>(

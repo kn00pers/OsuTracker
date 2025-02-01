@@ -114,14 +114,14 @@ class Statistics {
 
   int? rankDifference(int? current, int? previous) {
     if (current!= null && previous!= null) {
-      return current - previous;
+      return previous - current;
     }
     return null;
   }
 
   double? ppDifference(double? current, double? previous) {
     if (current!= null && previous!= null) {
-      return current - previous;
+      return previous - current;
     }
     return null;
   }

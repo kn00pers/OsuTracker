@@ -9,11 +9,13 @@ class FavoriteScreen extends StatefulWidget {
   final List<User> favoriteUsers;
   final Function(User) onRemoveFromFavorites;
   final Function(User) onUpdateUser;
+  final Map<String, Map<String, dynamic>> historicalStats; // Add this
 
   FavoriteScreen({
     required this.favoriteUsers,
     required this.onRemoveFromFavorites,
     required this.onUpdateUser,
+    required this.historicalStats, // Add this
   });
 
   @override
@@ -71,8 +73,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         });
       } else if (_filterType == 'ranking') {
         _filteredUsers.sort((a, b) {
-          return (a.statistics?.globalRank?? double.infinity)
-            .compareTo(b.statistics?.globalRank?? double.infinity);
+          return (a.statistics?.globalRank?? double.infinity).compareTo(b.statistics?.globalRank?? double.infinity);
         });
       }
     });
@@ -99,9 +100,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
     final updatedUser = await ApiService.fetchUserData(user.username, accessToken);
     if (updatedUser!= null) {
-      // Before updating, store the current statistics as previousStatistics
       updatedUser.previousStatistics = user.statistics;
-      // Store the updated user statistics
       await StorageService.saveUserStats(updatedUser);
       _updateUser(updatedUser);
     } else {
@@ -204,6 +203,11 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                       itemCount: _filteredUsers.length,
                       itemBuilder: (context, index) {
                         final user = _filteredUsers[index];
+                        final previousStats = widget.historicalStats[user.username]; 
+                        final int? globalRankDiff = user.statistics?.globalRank!= null && previousStats?['globalRank']!= null
+                          ? user.statistics!.globalRank! - (previousStats!['globalRank'] as int)
+                          : null;
+
                         return Container(
                           margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                           decoration: BoxDecoration(
@@ -218,21 +222,26 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                               user.username,
                               style: const TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2), fontWeight: FontWeight.bold),
                             ),
-                            subtitle: RichText(
-                              text: TextSpan(
-                              text: 'Rank: ${user.statistics?.globalRank ?? 'N/A'} ',
-                              style: const TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (user.statistics != null && user.previousStatistics != null)
-                                if (user.statistics?.rankDifference(user.statistics?.globalRank, user.previousStatistics?.globalRank) != 0)
-                                  TextSpan(
-                                  text: ' (${user.statistics?.rankDifference(user.statistics?.globalRank, user.previousStatistics?.globalRank)?.isNegative == true ? '+' : '-'}${user.statistics?.rankDifference(user.statistics?.globalRank, user.previousStatistics?.globalRank) ?? 'N/A'})',
-                                  style: TextStyle(
-                                    color: user.statistics?.rankDifference(user.statistics?.globalRank, user.previousStatistics?.globalRank)?.isNegative == true ? Colors.green : Colors.red,
+                                RichText(
+                                  text: TextSpan(
+                                    text: 'Rank: ${user.statistics?.globalRank?? 'N/A'} ',
+                                    style: const TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
+                                    children: [
+                                      if (globalRankDiff!= null && globalRankDiff!= 0)
+                                        TextSpan(
+                                          text: ' (${globalRankDiff >= 0? '+': ''}$globalRankDiff)',
+                                          style: TextStyle(
+                                            color: globalRankDiff > 0? Colors.green: Colors.red,
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                                  ),
+                                ),
+                                // Add more rows for other stats (PP, country rank, etc.) and their differences
                               ],
-                              ),
                             ),
                             trailing: IconButton(
                               icon: Icon(Icons.delete, color: Color(0xFFeeedf2)),

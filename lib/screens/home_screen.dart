@@ -62,7 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
       _isLoading = false;
       if (user!= null) {
         _user = user;
-        // Store the fetched user statistics
         StorageService.saveUserStats(user);
         Navigator.push(
           context,
@@ -175,12 +174,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (accessToken!= null) {
                         final updatedUser = await ApiService.fetchUserData(user.username, accessToken);
                         if (updatedUser!= null) {
+                          updatedUser.previousStatistics = user.statistics;
+                          await StorageService.saveUserStats(updatedUser);
                           _updateUser(updatedUser);
                           _isLoading = true;
                         }
                       }
                     }
-
                     _isLoading = false;
                     Navigator.push(
                       context,
@@ -189,6 +189,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           favoriteUsers: _favoriteUsers,
                           onRemoveFromFavorites: _removeFromFavorites,
                           onUpdateUser: _updateUser,
+                          historicalStats: {
+                            for (var user in _favoriteUsers)
+                              user.username: {
+                                'globalRank': user.previousStatistics?.globalRank?? 0,
+                                'countryRank': user.previousStatistics?.countryRank?? 0,
+                                'pp': user.previousStatistics?.pp?? 0,
+                              }
+                          },
                         ),
                       ),
                     );
