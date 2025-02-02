@@ -9,13 +9,13 @@ class FavoriteScreen extends StatefulWidget {
   final List<User> favoriteUsers;
   final Function(User) onRemoveFromFavorites;
   final Function(User) onUpdateUser;
-  final Map<String, Map<String, dynamic>> historicalStats; // Add this
+  final Map<String, Map<String, dynamic>> historicalStats; 
 
   FavoriteScreen({
     required this.favoriteUsers,
     required this.onRemoveFromFavorites,
     required this.onUpdateUser,
-    required this.historicalStats, // Add this
+    required this.historicalStats,
   });
 
   @override
@@ -232,7 +232,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                     children: [
                                       if (globalRankDiff!= null && globalRankDiff!= 0)
                                         TextSpan(
-                                          text: ' (${globalRankDiff >= 0? '+': ''}$globalRankDiff)',
+                                          text: ' (${globalRankDiff <= 0? '+': ''}$globalRankDiff)', // globalrank
                                           style: TextStyle(
                                             color: globalRankDiff > 0? Colors.green: Colors.red,
                                           ),
@@ -240,11 +240,10 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                     ],
                                   ),
                                 ),
-                                // Add more rows for other stats (PP, country rank, etc.) and their differences
                               ],
                             ),
                             trailing: IconButton(
-                              icon: Icon(Icons.delete, color: Color(0xFFeeedf2)),
+                              icon: const Icon(Icons.delete, color: Color(0xFFeeedf2)),
                               onPressed: () {
                                 _removeFromFavorites(user);
                               },
