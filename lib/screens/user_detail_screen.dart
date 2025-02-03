@@ -204,9 +204,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     String differenceText = '';
 
     if (ppDifference != null && ppDifference != 0) {
-      differenceText = ' (${ppDifference <= 0 ? '+' : ''}${ppDifference.toStringAsFixed(0)})'; // pp difference
+      differenceText = ' (${ppDifference >= 0 ? '+' : ''}${ppDifference.toStringAsFixed(0)})'; // pp difference
     } else if (rankDifference != null && rankDifference != 0) {
-      differenceText = ' (${rankDifference <= 0 ? '+' : ''}$rankDifference)'; // rank difference
+      differenceText = ' (${rankDifference >= 0 ? '+' : ''}$rankDifference)'; // rank difference
     }
 
     return Padding(

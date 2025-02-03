@@ -232,7 +232,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                     children: [
                                       if (globalRankDiff!= null && globalRankDiff!= 0)
                                         TextSpan(
-                                          text: ' (${globalRankDiff <= 0? '+': ''}$globalRankDiff)', // globalrank
+                                          text: ' (${globalRankDiff >= 0? '+': ''}$globalRankDiff)', // globalrank
                                           style: TextStyle(
                                             color: globalRankDiff > 0? Colors.green: Colors.red,
                                           ),

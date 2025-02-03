@@ -121,7 +121,7 @@ class Statistics {
 
   double? ppDifference(double? current, double? previous) {
     if (current!= null && previous!= null) {
-      return previous - current;
+      return current - previous;
     }
     return null;
   }
