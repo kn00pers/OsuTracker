@@ -230,13 +230,13 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                     text: 'Rank: ${user.statistics?.globalRank?? 'N/A'} ',
                                     style: const TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
                                     children: [
-                                      if (globalRankDiff!= null && globalRankDiff!= 0)
+                                      if (globalRankDiff != null && globalRankDiff != 0)
                                         TextSpan(
-                                          text: ' (${globalRankDiff >= 0? '+': ''}$globalRankDiff)', // globalrank
+                                          text: ' (${globalRankDiff <= 0 ? '+' : '-'}${globalRankDiff.abs()})', // globalrank
                                           style: TextStyle(
-                                            color: globalRankDiff > 0? Colors.green: Colors.red,
-                                          ),
-                                        ),
+                                          color: globalRankDiff < 0 ? Colors.green : Colors.red,
+                                                  ),
+                                                ),
                                     ],
                                   ),
                                 ),
@@ -249,7 +249,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                               },
                             ),
                             onTap: () async {
-                              await _fetchUserData(user, showLoading: true);
+                              await
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -270,7 +270,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                                       });
                                     },
                                     favoriteUsers: _favoriteUsers,
-                                    onUpdateUser: _updateUser,
+                                    onUpdateUser: _updateUser, historicalStats: {},
                                   ),
                                 ),
                               ).then((_) {
