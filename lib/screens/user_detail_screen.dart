@@ -182,52 +182,53 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   }
 
   Widget _buildStatisticRow(String label, String value, {double? ppDifference, int? rankDifference}) {
-    String differenceText = '';
+  String differenceText = '';
 
-    if (ppDifference != null && ppDifference != 0) {
-      differenceText = ' (${ppDifference >= 0 ? '+' : ''}${ppDifference.toStringAsFixed(0)})'; // pp difference
-    } else if (rankDifference != null && rankDifference != 0) {
-      differenceText = ' (${rankDifference >= 0 ? '+' : ''}$rankDifference)'; // rank difference
-    }
+  if (ppDifference != null && ppDifference != 0) {
+    differenceText = ' (${ppDifference >= 0 ? '+' : ''}${ppDifference.toStringAsFixed(0)})'; // pp difference
+  }
+  else if (rankDifference != null && rankDifference != 0) {
+    differenceText = ' (${rankDifference >= 0 ? '+' : ''}$rankDifference)'; // rank difference
+  }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontFamily: 'Exo2',
-              color: Color(0xFFeeedf2),
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 5),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Exo2',
+            color: Color(0xFFeeedf2),
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
           ),
-          RichText(
-            text: TextSpan(
-              children: [
+        ),
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: value,
+                style: const TextStyle(
+                  fontFamily: 'Exo2',
+                  color: Color(0xFFeeedf2),
+                  fontSize: 16,
+                ),
+              ),
+              if (differenceText.isNotEmpty)
                 TextSpan(
-                  text: value,
-                  style: const TextStyle(
-                    fontFamily: 'Exo2',
-                    color: Color(0xFFeeedf2),
+                  text: differenceText,
+                  style: TextStyle(
+                    color: differenceText.contains('+') ? Colors.green : Colors.red,
                     fontSize: 16,
                   ),
                 ),
-                if (differenceText.isNotEmpty)
-                  TextSpan(
-                    text: differenceText,
-                    style: TextStyle(
-                      color: differenceText.contains('+') ? Colors.green : Colors.red,
-                      fontSize: 16,
-                    ),
-                  ),
-              ],
-            ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 }
