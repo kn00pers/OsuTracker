@@ -1,25 +1,35 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 
 class StorageService {
-  static Future<void> saveUserStats(User user) async {
+  static const _favoritesKey = 'favoriteUsers';
+
+  static Future<void> saveFavoriteUsers(List<User> users) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('${user.id}_globalRank', user.statistics?.globalRank?? 0);
-    await prefs.setInt('${user.id}_countryRank', user.statistics?.countryRank?? 0);
-    await prefs.setDouble('${user.id}_pp', user.statistics?.pp?? 0);
+    final usersJson = users.map((user) => jsonEncode(user.toJson())).toList();
+    await prefs.setStringList(_favoritesKey, usersJson);
   }
 
-  static Future<Map<String, dynamic>?> getUserStats(String userId) async {
+  static Future<List<User>> getFavoriteUsers() async {
     final prefs = await SharedPreferences.getInstance();
-    final globalRank = prefs.getInt('${userId}_globalRank');
-    final countryRank = prefs.getInt('${userId}_countryRank');
-    final pp = prefs.getDouble('${userId}_pp');
-    if (globalRank!= null && countryRank!= null && pp!= null) {
-      return {
-        'globalRank': globalRank,
-        'countryRank': countryRank,
-        'pp': pp,
-      };
+    final usersJson = prefs.getStringList(_favoritesKey);
+    if (usersJson == null) {
+      return [];
+    }
+    return usersJson.map((json) => User.fromJson(jsonDecode(json))).toList();
+  }
+
+  static Future<void> saveUserStats(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('${user.id}_stats', jsonEncode(user.toJson()));
+  }
+
+  static Future<User?> getUserStats(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userJson = prefs.getString('${userId}_stats');
+    if (userJson != null) {
+      return User.fromJson(jsonDecode(userJson));
     }
     return null;
   }

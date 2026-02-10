@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'user_detail_screen.dart';
 import 'favorite_screen.dart';
 import '../services/api_service.dart';
 import '../models/user.dart';
 import '../services/storage_service.dart';
+import '../colors/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _controller = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
-  User? _user;
   List<User> _favoriteUsers = [];
+  final Map<String, Map<String, dynamic>> _historicalStats = {};
 
   @override
   void initState() {
@@ -26,20 +27,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? favoriteJson = prefs.getString('favorites');
-    if (favoriteJson!= null) {
-      final List<dynamic> userMap = jsonDecode(favoriteJson);
-      setState(() {
-        _favoriteUsers = userMap.map((data) => User.fromJson(data)).toList();
-      });
+    _favoriteUsers = await StorageService.getFavoriteUsers();
+    await _loadHistoricalStats();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _loadHistoricalStats() async {
+    for (var user in _favoriteUsers) {
+      final storedUser = await StorageService.getUserStats(user.id.toString());
+      if (storedUser != null && storedUser.statistics != null) {
+        _historicalStats[user.username] = {
+          'globalRank': storedUser.statistics!.globalRank,
+          'countryRank': storedUser.statistics!.countryRank,
+          'pp': storedUser.statistics!.pp,
+        };
+      }
     }
   }
 
   Future<void> _saveFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    final favoriteJson = _favoriteUsers.map((user) => user.toJson()).toList();
-    await prefs.setString('favorites', jsonEncode(favoriteJson));
+    await StorageService.saveFavoriteUsers(_favoriteUsers);
   }
 
   void _fetchUserData() async {
@@ -48,37 +57,47 @@ class _HomeScreenState extends State<HomeScreen> {
       _errorMessage = null;
     });
 
-    final accessToken = await ApiService.getAccessToken();
-    if (accessToken == null) {
+    try {
+      final user = await ApiService.fetchUser(_controller.text);
+      await StorageService.saveUserStats(user);
+      if (!mounted) return;
+
+      final historicalUser = await StorageService.getUserStats(user.id.toString());
+      Map<String, dynamic> historicalData = {};
+      if (historicalUser != null && historicalUser.statistics != null) {
+        historicalData = {
+          'globalRank': historicalUser.statistics!.globalRank,
+          'countryRank': historicalUser.statistics!.countryRank,
+          'pp': historicalUser.statistics!.pp,
+        };
+      }
+
       setState(() {
         _isLoading = false;
-        _errorMessage = "Unable to obtain access token";
       });
-      return;
-    }
 
-    final user = await ApiService.fetchUserData(_controller.text, accessToken);
-    setState(() {
-      _isLoading = false;
-      if (user!= null) {
-        _user = user;
-        StorageService.saveUserStats(user);
+      if (mounted) {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => UserDetailScreen(
-              user: _user!,
+              user: user,
               onAddToFavorites: _addToFavorites,
               onRemoveFromFavorites: _removeFromFavorites,
               favoriteUsers: _favoriteUsers,
-              onUpdateUser: _updateUser, historicalStats: {},
+              onUpdateUser: _updateUser,
+              historicalStats: {user.username: historicalData},
             ),
           ),
         );
-      } else {
-        _errorMessage = "User not found";
       }
-    });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = "Failed to fetch user data.";
+      });
+    }
   }
 
   void _validateAndFetchUserData() {
@@ -110,129 +129,152 @@ class _HomeScreenState extends State<HomeScreen> {
   void _updateUser(User user) {
     setState(() {
       int index = _favoriteUsers.indexWhere((u) => u.id == user.id);
-      if (index!= -1) {
+      if (index != -1) {
         _favoriteUsers[index] = user;
         _saveFavorites();
       }
     });
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    body: Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF302e39),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Expanded( // Umożliwia wycentrowanie głównej zawartości
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextField(
-                    controller: _controller,
-                    autocorrect: false,
-                    decoration: InputDecoration(
-                      labelStyle: const TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
-                      filled: true,
-                      fillColor: const Color(0xFF18171c),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide.none,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.background,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextField(
+                      controller: _controller,
+                      autocorrect: false,
+                      decoration: InputDecoration(
+                        labelText: 'Enter osu! username',
+                        labelStyle: const TextStyle(
+                            fontFamily: 'Exo2', color: AppColors.text),
+                        filled: true,
+                        fillColor: AppColors.buttons,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon:
+                            const Icon(Icons.person, color: AppColors.favorite),
                       ),
-                      prefixIcon: const Icon(Icons.person, color: Color(0xFFeeedf2)),
+                      style: const TextStyle(
+                          fontFamily: 'Exo2', color: AppColors.text),
                     ),
-                    style: const TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2)),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: _validateAndFetchUserData,
-                    icon: const Icon(Icons.search, color: Color(0xFFfa66a5)),
-                    label: const Text('Get Stats', style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2), fontSize: 16, fontWeight: FontWeight.bold)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF18171c),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                    const SizedBox(height: 20),
+                    ElevatedButton.icon(
+                      onPressed: _validateAndFetchUserData,
+                      icon: const Icon(Icons.search, color: AppColors.favorite),
+                      label: const Text('Get Stats',
+                          style: TextStyle(
+                              fontFamily: 'Exo2',
+                              color: AppColors.text,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.buttons,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 15),
+                        elevation: 5,
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                      elevation: 5,
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  if (_isLoading) const CircularProgressIndicator(color: Color(0xFFfa66a5)),
-                  if (_errorMessage != null)
-                    Text(
-                      _errorMessage!,
-                      style: const TextStyle(fontFamily: 'Exo2', color: Colors.red),
-                    ),
-                  const SizedBox(height: 10),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      for (var user in _favoriteUsers) {
-                        final accessToken = await ApiService.getAccessToken();
-                        if (accessToken != null) {
-                          final updatedUser = await ApiService.fetchUserData(user.username, accessToken);
-                          if (updatedUser != null) {
+                    const SizedBox(height: 10),
+                    if (_isLoading)
+                      const CircularProgressIndicator(color: AppColors.favorite),
+                    if (_errorMessage != null)
+                      Text(
+                        _errorMessage!,
+                        style: const TextStyle(
+                            fontFamily: 'Exo2', color: Colors.red),
+                      ),
+                    const SizedBox(height: 10),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        setState(() {
+                          _isLoading = true;
+                        });
+
+                        List<User> updatedUsers = [];
+                        for (var user in _favoriteUsers) {
+                          try {
+                            final updatedUser = await ApiService.fetchUser(user.username);
                             updatedUser.previousStatistics = user.statistics;
                             await StorageService.saveUserStats(updatedUser);
-                            _updateUser(updatedUser);
-                            _isLoading = true;
+                            updatedUsers.add(updatedUser);
+                          } catch (e) {
+                             updatedUsers.add(user);
                           }
                         }
-                      }
-                      _isLoading = false;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FavoriteScreen(
-                            favoriteUsers: _favoriteUsers,
-                            onRemoveFromFavorites: _removeFromFavorites,
-                            onUpdateUser: _updateUser,
-                            historicalStats: {
-                              for (var user in _favoriteUsers)
-                                user.username: {
-                                  'globalRank': user.previousStatistics?.globalRank ?? 0,
-                                  'countryRank': user.previousStatistics?.countryRank ?? 0,
-                                  'pp': user.previousStatistics?.pp ?? 0,
-                                }
-                            },
+
+                        setState(() {
+                          _favoriteUsers = updatedUsers;
+                           _isLoading = false;
+                        });
+                        await _saveFavorites();
+                        await _loadHistoricalStats();
+
+                        if (!mounted) return;
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FavoriteScreen(
+                              favoriteUsers: _favoriteUsers,
+                              onRemoveFromFavorites: _removeFromFavorites,
+                              onUpdateUser: _updateUser,
+                              historicalStats: _historicalStats,
+                            ),
                           ),
+                        );
+                      },
+                      icon: const Icon(Icons.favorite, color: AppColors.favorite),
+                      label: const Text('Favorites',
+                          style: TextStyle(
+                              fontFamily: 'Exo2',
+                              color: AppColors.text,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.buttons,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.favorite, color: Color(0xFFfa66a5)),
-                    label: const Text('Favorites', style: TextStyle(fontFamily: 'Exo2', color: Color(0xFFeeedf2), fontSize: 16, fontWeight: FontWeight.bold)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF18171c),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 15),
+                        elevation: 5,
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                      elevation: 5,
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.only(bottom: 10), // Zapewnia trochę miejsca na dole
-              child: Text(
-                "Created by @kn00pers",
-                style: TextStyle(
-                  fontFamily: 'Exo2',
-                  color: Color.fromARGB(255, 173, 172, 176),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  ],
                 ),
               ),
-            ),
-          ],
+              const Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: Text(
+                  "Created by @kn00pers",
+                  style: TextStyle(
+                    fontFamily: 'Exo2',
+                    color: Color.fromARGB(255, 173, 172, 176),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

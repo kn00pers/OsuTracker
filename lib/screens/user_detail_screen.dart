@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/user.dart';
+import '../colors/app_colors.dart';
+import 'scores_screen.dart';
 
 class UserDetailScreen extends StatefulWidget {
   final User user;
@@ -8,19 +10,20 @@ class UserDetailScreen extends StatefulWidget {
   final Function(User) onRemoveFromFavorites;
   final List<User> favoriteUsers;
   final Function(User) onUpdateUser;
-  final Map<String, Map<String, dynamic>> historicalStats; // Dodano przekazywanie statystyk
+  final Map<String, Map<String, dynamic>> historicalStats;
 
-  UserDetailScreen({
+  const UserDetailScreen({
+    super.key,
     required this.user,
     required this.onAddToFavorites,
     required this.onRemoveFromFavorites,
     required this.favoriteUsers,
     required this.onUpdateUser,
-    required this.historicalStats, // Nowy parametr
+    required this.historicalStats,
   });
 
   @override
-  _UserDetailScreenState createState() => _UserDetailScreenState();
+  State<UserDetailScreen> createState() => _UserDetailScreenState();
 }
 
 class _UserDetailScreenState extends State<UserDetailScreen> {
@@ -52,7 +55,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     final String formattedDate = formatter.format(joinDate);
     final String hitAccuracy = user.statistics?.hitAccuracy?.toStringAsFixed(2) ?? 'N/A';
 
-    // Pobranie historycznych statystyk użytkownika
     final previousStats = widget.historicalStats[user.username];
 
     final int? globalRankDiff = user.statistics?.globalRank != null && previousStats?['globalRank'] != null
@@ -69,9 +71,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF302e39), // Tło aplikacji
-        ),
+        color: AppColors.background,
         child: Stack(
           children: [
             Center(
@@ -101,7 +101,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                               user.username,
                               style: const TextStyle(
                                 fontFamily: 'Exo2',
-                                color: Color(0xFFeeedf2),
+                                color: AppColors.text,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 22,
                                 shadows: [
@@ -122,20 +122,45 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _toggleFavorite,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF18171c),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _toggleFavorite,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.buttons,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                          elevation: 5,
+                        ),
+                        child: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: AppColors.favorite,
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                      elevation: 5,
-                    ),
-                    child: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: const Color(0xFFfa66a5),
-                    ),
+                      const SizedBox(width: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ScoresScreen(userId: user.id),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.buttons,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                          elevation: 5,
+                        ),
+                        child: const Text('View Top Scores', style: TextStyle(color: AppColors.text)),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   Card(
@@ -143,7 +168,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    color: const Color(0xFF18171c),
+                    color: AppColors.buttons,
                     elevation: 5,
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
@@ -169,7 +194,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               top: 40,
               left: 10,
               child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Color(0xFFeeedf2)),
+                icon: const Icon(Icons.arrow_back, color: AppColors.text),
                 onPressed: () {
                   Navigator.pop(context, user);
                 },
@@ -182,53 +207,49 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
   }
 
   Widget _buildStatisticRow(String label, String value, {double? ppDifference, int? rankDifference}) {
-  String differenceText = '';
+    Widget differenceWidget = const SizedBox();
 
-  if (ppDifference != null && ppDifference != 0) {
-    differenceText = ' (${ppDifference >= 0 ? '+' : ''}${ppDifference.toStringAsFixed(0)})'; // pp difference
-  }
-  else if (rankDifference != null && rankDifference != 0) {
-    differenceText = ' (${rankDifference >= 0 ? '+' : ''}$rankDifference)'; // rank difference
-  }
+    if (ppDifference != null && ppDifference != 0) {
+      differenceWidget = Text(
+        ' (${ppDifference > 0 ? '+' : ''}${ppDifference.toStringAsFixed(0)})',
+        style: TextStyle(color: ppDifference > 0 ? Colors.green : Colors.red),
+      );
+    } else if (rankDifference != null && rankDifference != 0) {
+      differenceWidget = Text(
+        ' (${rankDifference > 0 ? '+' : ''}$rankDifference)',
+        style: TextStyle(color: rankDifference < 0 ? Colors.green : Colors.red),
+      );
+    }
 
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 5),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'Exo2',
-            color: Color(0xFFeeedf2),
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'Exo2',
+              color: AppColors.text,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
-        ),
-        RichText(
-          text: TextSpan(
+          Row(
             children: [
-              TextSpan(
-                text: value,
+              Text(
+                value,
                 style: const TextStyle(
                   fontFamily: 'Exo2',
-                  color: Color(0xFFeeedf2),
+                  color: AppColors.text,
                   fontSize: 16,
                 ),
               ),
-              if (differenceText.isNotEmpty)
-                TextSpan(
-                  text: differenceText,
-                  style: TextStyle(
-                    color: differenceText.contains('+') ? Colors.green : Colors.red,
-                    fontSize: 16,
-                  ),
-                ),
+              differenceWidget,
             ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
+          )
+        ],
+      ),
+    );
+  }
 }
